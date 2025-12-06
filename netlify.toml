@@ -1,0 +1,7 @@
+[build]
+  # Optional: Define a base directory if your static files are not in the root
+  # publish = "dist" 
+  
+[functions]
+  # This tells Netlify where to find and build your function files
+  directory = "netlify/functions"

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Comandă finalizată - La Garaj</title>
+  <style>
+    body{font-family:Inter,Arial,sans-serif;background:#f8fafc;color:#111;margin:0;padding:40px}
+    .card{max-width:760px;margin:40px auto;padding:24px;background:white;border-radius:12px;box-shadow:0 10px 30px rgba(2,6,23,0.08)}
+    h1{margin:0 0 8px;font-size:24px}
+    p{margin:8px 0;color:#374151}
+    .items{margin-top:16px}
+    .item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9}
+    .btn{display:inline-block;padding:10px 16px;background:#111;color:#fff;border-radius:8px;text-decoration:none;margin-top:18px}
+    .muted{color:#6b7280}
+    pre{background:#f3f4f6;padding:12px;border-radius:8px;overflow:auto}
+    .error-message {
+    margin: 16px 0;
+    animation: fadeIn 0.5s;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #111;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  
+  .btn:hover {
+    background: #dc2626;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Mulțumim! Comanda ta a fost procesată.</h1>
+    <p id="summary" class="muted">Se încarcă detalii despre comandă…</p>
+
+    <div id="details" style="display:none">
+      <p><strong>Stare plată:</strong> <span id="payment_status"></span></p>
+      <p><strong>Suma plătită:</strong> <span id="amount"></span></p>
+      <p><strong>Nume client:</strong> <span id="customer_name"></span></p>
+      <p><strong>Email:</strong> <span id="customer_email"></span></p>
+
+      <div class="items" id="line_items"></div>
+
+      <a class="btn" href="/">Înapoi la magazin</a>
+
+      <pre id="raw" style="display:none"></pre>
+    </div>
+
+    <div id="noSession" style="display:none">
+      <p class="muted">Nu s-a găsit niciun `session_id` în URL. Dacă ai fost redirecționat de Stripe, verifică parametrii din URL.</p>
+      <a class="btn" href="/">Înapoi la magazin</a>
+    </div>
+  </div>
+
+  <script>
+    function fmtPrice(amount, currency){
+      if (amount == null) return '';
+      // Stripe returns amount in the smallest currency unit (bani), so divide by 100
+      return (amount/100).toLocaleString('ro-RO', {style:'currency', currency: currency ? currency.toUpperCase() : 'RON'});
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id') || params.get('sessionId');
+
+    if (!sessionId) {
+      document.getElementById('summary').style.display = 'none';
+      document.getElementById('noSession').style.display = 'block';
+    } else {
+      fetch(`/.netlify/functions/checkout-session?session_id=${encodeURIComponent(sessionId)}`)
+        .then(r => r.json())
+        .then(session => {
+          document.getElementById('summary').style.display = 'none';
+          
+          // Check if payment failed
+          if (session.payment_status === 'unpaid' || 
+              (session.payment_intent && session.payment_intent.status === 'requires_payment_method') ||
+              session.status === 'open') {
+            
+            // Show error UI
+            const details = document.getElementById('details');
+            details.style.display = 'block';
+            details.classList.add('payment-error');
+            
+            // Update payment status with error information
+            document.getElementById('payment_status').textContent = 'Eșuată';
+            document.getElementById('payment_status').style.color = '#dc2626';
+            
+            // Display error message if available
+            if (session.payment_error) {
+              const errorDiv = document.createElement('div');
+              errorDiv.className = 'error-message';
+              errorDiv.innerHTML = `
+                <div style="background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:16px;margin:16px 0;border-radius:8px">
+                  <h3 style="font-weight:bold;margin-bottom:8px">Plata nu a putut fi procesată</h3>
+                  <p>${session.payment_error.message || 'Vă rugăm să încercați din nou sau să alegeți altă metodă de plată.'}</p>
+                  <a href="/" class="btn" style="margin-top:12px;display:inline-block">Înapoi la magazin</a>
+                </div>
+              `;
+              details.insertBefore(errorDiv, details.firstChild);
+            }
+          } else {
+            // Continue with successful payment display
+            document.getElementById('details').style.display = 'block';
+            
+            document.getElementById('payment_status').textContent = session.payment_status || session.status || '';
+            document.getElementById('amount').textContent = fmtPrice(session.amount_total || (session.payment_intent && session.payment_intent.amount), session.currency || (session.payment_intent && session.payment_intent.currency) || 'RON');
+
+            const cust = session.customer_details || (session.customer && (session.customer.name || session.customer.email)) || {};
+            document.getElementById('customer_name').textContent = (session.customer_details && session.customer_details.name) || (session.customer && session.customer.name) || '—';
+            document.getElementById('customer_email').textContent = (session.customer_details && session.customer_details.email) || (session.customer && session.customer.email) || ((session.customer && session.customer.email) || '—');
+
+            const container = document.getElementById('line_items');
+            if (session.line_items && session.line_items.data && session.line_items.data.length){
+              session.line_items.data.forEach(li => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                const name = li.description || (li.price && li.price.product && li.price.product.name) || (li.price && li.price.product_data && li.price.product_data.name) || li.price?.nickname || 'Produs';
+                const qty = li.quantity || 1;
+                const price = fmtPrice(li.amount_total || (li.price && li.price.unit_amount * qty), (li.currency || (li.price && li.price.currency) || session.currency) );
+                div.innerHTML = `<div>${name} <span class="muted">x${qty}</span></div><div>${price}</div>`;
+                container.appendChild(div);
+              });
+            }
+          }
+        })
+        .catch(err => {
+          document.getElementById('summary').textContent = 'A apărut o eroare la încărcarea detaliilor comenzii.';
+          console.error(err);
+        });
+    }
+  </script>
+</body>
+</html>
