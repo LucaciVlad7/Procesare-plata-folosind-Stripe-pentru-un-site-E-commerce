@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Garaj - Baterii Auto Premium & Produse Detailing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <style>
+        :root {
+            --primary-black: #000000;
+            --secondary-white: #FFFFFF;
+            --accent-gray: #f5f5f5;
+            --accent-red: #dc2626;
+            --accent-blue: #2563eb;
+            --text-gray: #6b7280;
+            --border-gray: #e5e7eb;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--primary-black);
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, #000000 0%, #1f2937 50%, #000000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+        }
+        .product-card {
+            background: var(--secondary-white);
+            border: 1px solid var(--border-gray);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent-red);
+        }
+        .price-tag {
+            background: var(--primary-black);
+            color: var(--secondary-white);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .old-price {
+            color: var(--text-gray);
+            text-decoration: line-through;
+        }
+        .sale-badge {
+            background: var(--accent-red);
+            color: var(--secondary-white);
+            font-weight: 700;
+        }
+        .btn-primary {
+            background: var(--primary-black);
+            color: var(--secondary-white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: var(--accent-red);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-black);
+            border: 2px solid var(--primary-black);
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: var(--primary-black);
+            color: var(--secondary-white);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--secondary-white);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-gray);
+        }
+        .close:hover {
+            color: var(--accent-red);
+        }
+        .cart-badge {
+            background: var(--accent-red);
+            color: var(--secondary-white);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+        }
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #aiChatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+        .chat-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+            transition: all 0.3s ease;
+        }
+        .chat-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+        }
+        .chat-window {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            flex-direction: column;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #000000, #1f2937);
+            color: white;
+            padding: 1rem;
+            border-radius: 16px 16px 0 0;
+            font-weight: 600;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f9fafb;
+        }
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        .chat-message.user {
+            background: #000000;
+            color: white;
+            margin-left: auto;
+        }
+        .chat-message.bot {
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+    </style>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init("qbrTnw-laynSs9rJi");
+        })();
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-black">La Garaj</h1>
+                </div>
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-black hover:text-red-600 font-medium transition-colors">Acasă</a>
+                    <a href="#batteries" class="text-black hover:text-red-600 font-medium transition-colors">Baterii Auto</a>
+                    <a href="#detailing" class="text-black hover:text-red-600 font-medium transition-colors">Produse Detailing</a>
+                    <a href="#about" class="text-black hover:text-red-600 font-medium transition-colors">Despre Noi</a>
+                    <a href="#contact" class="text-black hover:text-red-600 font-medium transition-colors">Contact</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <a href="tel:+40727833343" class="flex items-center text-black hover:text-red-600 transition-colors">
+                        <i class="fas fa-phone mr-2"></i>
+                        <span class="hidden sm:inline">+40 727 833 343</span>
+                    </a>
+                    <div class="relative">
+                        <button onclick="toggleCart()" class="text-black hover:text-red-600 transition-colors relative">
+                            <i class="fas fa-shopping-cart text-xl"></i>
+                            <span id="cartCount" class="cart-badge">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg text-white py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="hero-title mb-6">
+                        <span id="typed-text"></span>
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+                        Performanță maximă pentru mașina ta cu baterii auto premium și produse de detailing profesionale. 
+                        Livrare și montaj gratuite în toată România.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button onclick="scrollToSection('batteries')" class="btn-primary text-lg px-8 py-4">
+                            <i class="fas fa-battery-full mr-2"></i>Vezi Baterii
+                        </button>
+                        <button onclick="scrollToSection('detailing')" class="btn-secondary text-lg px-8 py-4">
+                            <i class="fas fa-shield-alt mr-2"></i>Produse Detailing
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Batteries Section -->
+    <section id="batteries" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-battery-full text-red-600 mr-3"></i>Baterii Auto Premium
+                </h2>
+                <p class="text-xl text-gray-600">123 baterii disponibile de la branduri consacrate</p>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filter-section">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Caută după Vehicul</label>
+                        <select id="vehicleFilter" class="w-full p-3 border rounded-lg" onchange="filterBatteries()">
+                            <option value="">Toate mărcile</option>
+                            <option value="alfa-romeo">Alfa Romeo</option>
+                            <option value="audi">Audi</option>
+                            <option value="bmw">BMW</option>
+                            <option value="citroen">Citroen</option>
+                            <option value="dacia">Dacia</option>
+                            <option value="fiat">Fiat</option>
+                            <option value="ford">Ford</option>
+                            <option value="honda">Honda</option>
+                            <option value="hyundai">Hyundai</option>
+                            <option value="mercedes">Mercedes</option>
+                            <option value="nissan">Nissan</option>
+                            <option value="opel">Opel</option>
+                            <option value="peugeot">Peugeot</option>
+                            <option value="renault">Renault</option>
+                            <option value="skoda">Skoda</option>
+                            <option value="toyota">Toyota</option>
+                            <option value="volkswagen">Volkswagen</option>
+                            <option value="volvo">Volvo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Caută după Amperaj</label>
+                        <select id="amperageFilter" class="w-full p-3 border rounded-lg" onchange="filterBatteries()">
+                            <option value="">Toate amperajele</option>
+                            <option value="32-54">32-54Ah</option>
+                            <option value="55-66">55-66Ah</option>
+                            <option value="67-80">67-80Ah</option>
+                            <option value="82-110">82-110Ah</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Brand</label>
+                        <select id="brandFilter" class="w-full p-3 border rounded-lg" onchange="filterBatteries()">
+                            <option value="">Toate brandurile</option>
+                            <option value="sorgeti">Sorgeti</option>
+                            <option value="zap">Zap</option>
+                            <option value="bosch">Bosch</option>
+                            <option value="varta">Varta</option>
+                            <option value="exide">Exide</option>
+                            <option value="midac">Midac</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="batteryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Batteries will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailing Section -->
+    <section id="detailing" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-shield-alt text-red-600 mr-3"></i>Produse Detailing Nasiol
+                </h2>
+                <p class="text-xl text-gray-600">Tehnologie nano-avansată pentru protecție și îngrijire auto</p>
+            </div>
+
+            <div id="detailingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Detailing products will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-4">De ce să ne alegi pe noi?</h2>
+                <p class="text-xl text-gray-600">Tehnicieni cu experiență în domeniu</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shipping-fast text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Livrare de la 20 lei</h3>
+                    <p class="text-gray-600">sau ridicare și montaj gratuit de la sediul La Garaj</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-tools text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Montaj Gratuit</h3>
+                    <p class="text-gray-600">În Cluj-Napoca, Florești, Turda și Gilău</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Garanție 2 Ani</h3>
+                    <p class="text-gray-600">Fără condiții ascunse</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-4">Contactează-ne</h2>
+                <p class="text-xl text-gray-600">Suntem aici să te ajutăm!</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Contact Info -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-bold mb-6">Informații Contact</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Telefon</p>
+                                <a href="tel:+40727833343" class="text-lg font-semibold text-red-600 hover:text-red-700">+40 727 833 343</a>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Email</p>
+                                <a href="mailto:lagarajdetails@gmail.com" class="text-lg font-semibold text-red-600 hover:text-red-700">lagarajdetails@gmail.com</a>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Adresă</p>
+                                <p class="text-lg font-semibold">Cluj-Napoca, România</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-clock text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Program</p>
+                                <p class="text-lg font-semibold">Luni - Vineri: 09:00 - 18:00</p>
+                                <p class="text-sm text-gray-600">Sâmbătă: 09:00 - 14:00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Google Maps -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2732.16140999545!2d23.600082211670294!3d46.78142374447474!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47490d14c3a33065%3A0x9b741e4df8c151a!2sLa%20Garaj!5e0!3m2!1sro!2sro!4v1762160068357!5m2!1sro!2sro" 
+                        width="100%" 
+                        height="400" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                    <div class="p-4 bg-gray-50">
+                        <a href="https://maps.app.goo.gl/zThyFujZVT2w26sPm" target="_blank" rel="noopener noreferrer" class="text-red-600 font-semibold hover:text-red-700 flex items-center justify-center">
+                            <i class="fas fa-directions mr-2"></i>Deschide în Google Maps
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h3 class="text-2xl font-bold mb-4">La Garaj</h3>
+                <p class="text-gray-300 mb-6">Baterii auto premium și produse de detailing profesionale</p>
+                <p class="text-gray-400">&copy; 2024 La Garaj. Toate drepturile rezervate.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleCart()">&times;</span>
+            <h2 class="text-2xl font-bold mb-6">Coș de Cumpărături</h2>
+            <div id="cartItems" class="space-y-4 mb-6"></div>
+            <div class="border-t border-gray-200 pt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xl font-bold">Total:</span>
+                    <span id="cartTotal" class="text-2xl font-bold text-red-600">0 RON</span>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <button onclick="clearCart()" class="btn-secondary">
+                        <i class="fas fa-trash mr-2"></i>Golește Coș
+                    </button>
+                    <button onclick="checkout_ramburs()" class="btn-primary">
+                        <i class="fas fa-truck"></i> Finalizează Comanda Cu Plata Ramburs
+                    </button>
+                    <button onclick="checkout()" class="btn-primary">
+                        <i class="fas fa-credit-card mr-2"></i>Finalizează Comanda Cu Plata Online
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Form Modal -->
+    <div id="orderFormModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="document.getElementById('orderFormModal').style.display='none'">&times;</span>
+            <h2 class="text-2xl font-bold mb-6">Finalizează Comanda</h2>
+            
+            <form id="orderForm">
+                <div class="mb-4">
+                    <label class="block font-medium mb-2">Nume și Prenume *</label>
+                    <input type="text" id="customerName" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block font-medium mb-2">Email *</label>
+                    <input type="email" id="customerEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block font-medium mb-2">Telefon *</label>
+                    <input type="tel" id="customerPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block font-medium mb-2">Adresa Completă (incl. oraș, cod poștal) *</label>
+                    <textarea id="customerAddress" class="w-full px-4 py-2 border border-gray-300 rounded-lg" rows="3" required></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block font-medium mb-2">Metodă de Plată *</label>
+                    <select id="paymentMethod" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                        <option value="cash">Cash la livrare</option>
+                        <option value="transfer">Transfer bancar</option>
+                        <option value="pickup">Ridicare de la sediul La Garaj Cluj</option>
+                    </select>
+                </div>
+
+                <div class="border-t border-gray-200 pt-4">
+                    <h3 class="font-bold mb-3">Rezumat Comandă:</h3>
+                    <div id="orderSummary" class="bg-gray-50 p-4 rounded-lg mb-4"></div>
+                    <p class="text-sm text-gray-600 mb-2">Cost transport: <strong>20 RON</strong></p>
+                    <p class="text-red-600 font-bold text-lg" id="orderTotal"></p>
+                    <button type="submit" class="btn-primary w-full mt-4 py-3">
+                        <i class="fas fa-check mr-2"></i>Trimite Comanda
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Chatbot -->
+    <div id="aiChatbot">
+        <button class="chat-button" onclick="toggleChat()">
+            <i class="fas fa-robot text-2xl"></i>
+        </button>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <i class="fas fa-robot mr-2"></i>Flaviu - Asistent Virtual
+                    </div>
+                    <button onclick="toggleChat()" class="text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message bot">
+                    Bună! Sunt Flaviu, asistentul tău virtual. Cum te pot ajuta astăzi? Pot să te ghidez în alegerea bateriei perfecte sau a produselor de detailing potrivite pentru mașina ta! 🚗
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Scrie un mesaj..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="backend/backend.js"></script>
+</body>
+</html>
